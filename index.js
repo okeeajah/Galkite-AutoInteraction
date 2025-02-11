@@ -22,8 +22,8 @@ async function main(numberOfInteractions) {
 
   for (let i = 0; i < parseInt(numberOfInteractions); i++) {
     console.log(chalk.blue(`\nProcessing interaction ${i + 1} of ${numberOfInteractions}`));
-    const { request_text, response_text } = interactions[i % interactions.length];
-    await retryOperation(() => reportUsage(request_text, response_text));
+    const { agent_id, request_text, response_text } = interactions[i % interactions.length];
+    await retryOperation(() => reportUsage(agent_id, request_text, response_text));
   }
 
   console.log(chalk.magenta("\u23F3 All interactions completed. Waiting 24 hours before restarting..."));
@@ -37,8 +37,8 @@ const postUrl = 'https://quests-usage-dev.prod.zettablock.com/api/report_usage';
 function loadInteractionsFromFile(filePath) {
   const data = fs.readFileSync(filePath, 'utf-8');
   return data.split('\n').filter(line => line).map(line => {
-    const [request_text, response_text] = line.split('|');
-    return { request_text, response_text };
+    const [agent_id, request_text, response_text] = line.split('|');
+    return { agent_id, request_text, response_text };
   });
 }
 
@@ -61,10 +61,10 @@ async function retryOperation(operation, delay = 5000) {
   }
 }
 
-async function reportUsage(request_text, response_text) {
+async function reportUsage(agent_id, request_text, response_text) {
   const postPayload = {
     wallet_address: walletAddress,
-    agent_id: "deployment_p5J9lz1Zxe7CYEoo0TZpRVay",
+    agent_id,
     request_text,
     response_text,
     request_metadata: null
